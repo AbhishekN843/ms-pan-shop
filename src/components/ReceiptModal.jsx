@@ -81,7 +81,7 @@ export default function ReceiptModal({ sale, shopSettings = {}, onClose, onNewBi
       <body>
         <div class="center">
           <h2>${shopSettings.shop_name || "MS PAN SHOP"}</h2>
-          <div class="tagline">${shopSettings.tagline || "Pan, Cigarette, Confectionery & Drinks"}</div>
+          <div class="tagline">${shopSettings.tagline || "Wholesale Tobacco, Cigarettes, Pan Masala & Paper Cups"}</div>
           ${shopSettings.address ? `<div class="meta">${shopSettings.address}</div>` : ""}
           ${shopSettings.phone ? `<div class="meta">Phone: ${shopSettings.phone}</div>` : ""}
         </div>
@@ -170,7 +170,7 @@ export default function ReceiptModal({ sale, shopSettings = {}, onClose, onNewBi
             <div className="receipt-brand">
               <div className="receipt-logo-pill">MS</div>
               <h3>{shopSettings.shop_name || "MS PAN SHOP"}</h3>
-              <p className="receipt-tagline">{shopSettings.tagline || "Pan, Cigarette, Confectionery & Drinks"}</p>
+              <p className="receipt-tagline">{shopSettings.tagline || "Wholesale Tobacco, Cigarettes, Pan Masala & Paper Cups"}</p>
               {shopSettings.address && <p className="receipt-sub">{shopSettings.address}</p>}
               {shopSettings.phone && <p className="receipt-sub">Ph: {shopSettings.phone}</p>}
             </div>

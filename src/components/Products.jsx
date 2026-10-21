@@ -23,7 +23,7 @@ export default function Products({
   const [sellingPrice, setSellingPrice] = useState("");
   const [purchasePrice, setPurchasePrice] = useState("");
   const [stockQuantity, setStockQuantity] = useState("0");
-  const [unit, setUnit] = useState("piece");
+  const [unit, setUnit] = useState("pack");
   const [isActive, setIsActive] = useState(true);
 
   // Stock quick adjustment state
@@ -34,7 +34,17 @@ export default function Products({
   const [formError, setFormError] = useState("");
   const [notice, setNotice] = useState("");
 
-  const unitsList = ["piece", "packet", "glass", "cup", "box", "bottle", "pouch"];
+  const unitsList = [
+    "pack",
+    "box",
+    "carton",
+    "bundle",
+    "sleeve (100 pcs)",
+    "ladi / strip",
+    "packet",
+    "jar",
+    "piece",
+  ];
 
   // Open Add Modal
   const handleOpenAdd = () => {
@@ -45,7 +55,7 @@ export default function Products({
     setSellingPrice("");
     setPurchasePrice("");
     setStockQuantity("0");
-    setUnit("piece");
+    setUnit("pack");
     setIsActive(true);
     setFormError("");
     setModalMode("add");

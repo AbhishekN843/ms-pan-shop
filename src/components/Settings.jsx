@@ -9,12 +9,12 @@ export default function Settings({
 }) {
   const [shopName, setShopName] = useState(shopSettings.shop_name || "MS PAN SHOP");
   const [tagline, setTagline] = useState(
-    shopSettings.tagline || "Pan, Cigarette, Confectionery & Drinks"
+    shopSettings.tagline || "Wholesale Tobacco, Cigarettes, Pan Masala & Paper Cups"
   );
   const [phone, setPhone] = useState(shopSettings.phone || "");
   const [address, setAddress] = useState(shopSettings.address || "");
   const [footerMessage, setFooterMessage] = useState(
-    shopSettings.footer_message || "Thank you! Visit again."
+    shopSettings.footer_message || "Thank you for your business! Visit again for wholesale rates."
   );
 
   const [saving, setSaving] = useState(false);

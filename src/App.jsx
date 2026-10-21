@@ -26,10 +26,10 @@ function ShopAppContent({ user }) {
   const [sales, setSales] = useState([]);
   const [shopSettings, setShopSettings] = useState({
     shop_name: "MS PAN SHOP",
-    tagline: "Pan, Cigarette, Confectionery & Drinks",
+    tagline: "Wholesale Tobacco, Cigarettes, Pan Masala & Paper Cups",
     phone: "",
     address: "",
-    footer_message: "Thank you! Visit again.",
+    footer_message: "Thank you for your business! Visit again for wholesale rates.",
   });
 
   const [loadingInitial, setLoadingInitial] = useState(true);

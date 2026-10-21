@@ -9,10 +9,10 @@ import { formatINR, formatDateTime } from "./utils.js";
  */
 export function generateReceiptPdf(sale, shopSettings = {}) {
   const shopName = shopSettings.shop_name || "MS PAN SHOP";
-  const tagline = shopSettings.tagline || "Pan, Cigarette, Confectionery & Drinks";
+  const tagline = shopSettings.tagline || "Wholesale Tobacco, Cigarettes, Pan Masala & Paper Cups";
   const phone = shopSettings.phone || "";
   const address = shopSettings.address || "";
-  const footerMessage = shopSettings.footer_message || "Thank you! Visit again.";
+  const footerMessage = shopSettings.footer_message || "Thank you for your business! Visit again for wholesale rates.";
 
   // Thermal 80mm width (approx 80mm = 226pt)
   // Auto height based on items
