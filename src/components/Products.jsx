@@ -5,6 +5,7 @@ import { supabase } from "../lib/supabase";
 export default function Products({
   products = [],
   categories = [],
+  user = null,
   onRefresh,
 }) {
   const [search, setSearch] = useState("");
@@ -129,10 +130,14 @@ export default function Products({
         selling_price: price,
         purchase_price: pPrice,
         stock_quantity: stock,
-        unit: unit.trim() || "piece",
+        unit: unit.trim() || "pack",
         is_active: isActive,
         updated_at: new Date().toISOString(),
       };
+
+      if (user?.id) {
+        payload.user_id = user.id;
+      }
 
       if (modalMode === "add") {
         const { error } = await supabase.from("products").insert([payload]);
@@ -363,7 +368,19 @@ export default function Products({
               {filteredProducts.length === 0 ? (
                 <tr>
                   <td colSpan="8" className="text-center py-8 text-gray-500">
-                    No products matching your search or filters.
+                    {products.length === 0 ? (
+                      <div className="py-4">
+                        <p className="font-semibold text-gray-800 text-base mb-1">No products added yet</p>
+                        <p className="text-xs text-gray-500 mb-3">
+                          Your catalog is currently empty. Click &quot;+ Add New Product&quot; to add your first item.
+                        </p>
+                        <button className="btn btn-primary btn-sm" onClick={handleOpenAdd}>
+                          + Add First Product
+                        </button>
+                      </div>
+                    ) : (
+                      "No products matching your search or filters."
+                    )}
                   </td>
                 </tr>
               ) : (
@@ -467,14 +484,13 @@ export default function Products({
 
               <div className="form-row-2">
                 <div className="form-group">
-                  <label className="form-label">Category *</label>
+                  <label className="form-label">Category (Optional)</label>
                   <select
                     className="form-select"
                     value={categoryId}
                     onChange={(e) => setCategoryId(e.target.value)}
-                    required
                   >
-                    <option value="">Select Category</option>
+                    <option value="">No Category / General</option>
                     {categories.map((c) => (
                       <option key={c.id || c.slug} value={c.id}>
                         {c.name}

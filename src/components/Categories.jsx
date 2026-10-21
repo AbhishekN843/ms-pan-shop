@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 export default function Categories({
   categories = [],
   products = [],
+  user = null,
   onRefresh,
 }) {
   const [modalMode, setModalMode] = useState(null); // 'add' or 'edit'
@@ -63,15 +64,18 @@ export default function Categories({
     setSaving(true);
     try {
       if (modalMode === "add") {
-        const { error } = await supabase.from("categories").insert([
-          {
-            name: name.trim(),
-            slug: slug,
-            display_order: order,
-            is_active: isActive,
-            updated_at: new Date().toISOString(),
-          },
-        ]);
+        const catPayload = {
+          name: name.trim(),
+          slug: slug,
+          display_order: order,
+          is_active: isActive,
+          updated_at: new Date().toISOString(),
+        };
+        if (user?.id) {
+          catPayload.user_id = user.id;
+        }
+
+        const { error } = await supabase.from("categories").insert([catPayload]);
         if (error) throw error;
         setNotice(`Category "${name}" created successfully.`);
       } else if (modalMode === "edit" && currentCategory) {
@@ -164,7 +168,13 @@ export default function Categories({
               {categories.length === 0 ? (
                 <tr>
                   <td colSpan="6" className="text-center py-8 text-gray-500">
-                    No categories found. Run database migrations to seed categories.
+                    <p className="font-semibold text-gray-800 text-base mb-1">No custom categories yet</p>
+                    <p className="text-xs text-gray-500 mb-3">
+                      Categories help you organize wholesale items like Cigarettes, Pan Masala, and Paper Cups.
+                    </p>
+                    <button className="btn btn-primary btn-sm" onClick={handleOpenAdd}>
+                      + Add First Category
+                    </button>
                   </td>
                 </tr>
               ) : (

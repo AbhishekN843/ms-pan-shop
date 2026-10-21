@@ -39,24 +39,34 @@ function ShopAppContent({ user }) {
   // Fetch shop settings
   const fetchSettings = useCallback(async () => {
     try {
+      if (!user?.id) return;
       const { data, error } = await supabase
         .from("shop_settings")
         .select("*")
-        .eq("id", 1)
+        .eq("user_id", user.id)
         .maybeSingle();
 
       if (error) {
-        // Table might not exist yet if migrations haven't run
+        // Table might not exist or be empty for new user
         console.warn("Could not load shop_settings:", error.message);
         return;
       }
       if (data) {
         setShopSettings(data);
+      } else {
+        // Default settings for fresh user
+        setShopSettings({
+          shop_name: "MS PAN SHOP",
+          tagline: "Point of Sale Billing",
+          phone: "",
+          address: "",
+          footer_message: "Thank you for your business! Visit again.",
+        });
       }
     } catch (err) {
       console.warn("Settings fetch failed:", err);
     }
-  }, []);
+  }, [user]);
 
   // Fetch categories
   const fetchCategories = useCallback(async () => {
@@ -237,6 +247,7 @@ function ShopAppContent({ user }) {
                 shopSettings={shopSettings}
                 onSaleCompleted={handleSaleCompleted}
                 onRefreshProducts={fetchProducts}
+                onNavigateToProducts={() => setActiveTab("products")}
               />
             )}
 
@@ -253,6 +264,7 @@ function ShopAppContent({ user }) {
               <Products
                 products={products}
                 categories={categories}
+                user={user}
                 onRefresh={fetchProducts}
               />
             )}
@@ -261,6 +273,7 @@ function ShopAppContent({ user }) {
               <Categories
                 categories={categories}
                 products={products}
+                user={user}
                 onRefresh={fetchCategories}
               />
             )}

@@ -8,6 +8,7 @@ export default function NewBill({
   _shopSettings = {},
   onSaleCompleted,
   onRefreshProducts,
+  onNavigateToProducts,
 }) {
   const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
@@ -292,14 +293,30 @@ export default function NewBill({
 
         {/* Product Cards Grid */}
         <div className="products-grid-scroll">
-          {filteredProducts.length === 0 ? (
+          {products.length === 0 ? (
             <div className="empty-catalog-state">
-              <span className="text-4xl mb-2">📦</span>
-              <p className="font-semibold text-gray-700">No products found</p>
+              <span className="text-4xl mb-2">🏪</span>
+              <p className="font-bold text-gray-800 text-sm">Your Shop Catalog is Empty</p>
+              <p className="text-xs text-gray-500 mt-1 mb-3">
+                Start by adding your first product to generate bills.
+              </p>
+              {onNavigateToProducts && (
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={onNavigateToProducts}
+                >
+                  + Add Products Now
+                </button>
+              )}
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="empty-catalog-state">
+              <span className="text-4xl mb-2">🔍</span>
+              <p className="font-semibold text-gray-700">No matching products</p>
               <p className="text-xs text-gray-500">
                 {searchQuery
                   ? `No matches for "${searchQuery}"`
-                  : "No active products in this category"}
+                  : "No products in this category"}
               </p>
             </div>
           ) : (

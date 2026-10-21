@@ -34,7 +34,6 @@ export default function Settings({
     setSaving(true);
     try {
       const payload = {
-        id: 1,
         shop_name: shopName.trim(),
         tagline: tagline.trim(),
         phone: phone.trim(),
@@ -43,11 +42,27 @@ export default function Settings({
         updated_at: new Date().toISOString(),
       };
 
-      const { error: upsertErr } = await supabase
-        .from("shop_settings")
-        .upsert(payload, { onConflict: "id" });
+      if (user?.id) {
+        payload.user_id = user.id;
+      }
 
-      if (upsertErr) throw upsertErr;
+      // Try user-specific upsert first
+      let upsertRes;
+      if (user?.id) {
+        upsertRes = await supabase
+          .from("shop_settings")
+          .upsert(payload, { onConflict: "user_id" });
+      }
+
+      // Fallback for single-tenant legacy schema with id: 1
+      if (!user?.id || (upsertRes?.error && upsertRes.error.message?.includes("user_id"))) {
+        payload.id = 1;
+        upsertRes = await supabase
+          .from("shop_settings")
+          .upsert(payload, { onConflict: "id" });
+      }
+
+      if (upsertRes?.error) throw upsertRes.error;
 
       setNotice("Shop settings updated successfully! Receipts will now reflect these details.");
       if (onSaveSettings) onSaveSettings(payload);
