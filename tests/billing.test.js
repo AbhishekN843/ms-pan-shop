@@ -1,7 +1,7 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import { formatINR, formatDateTime, getKolkataDateString } from "../src/lib/utils.js";
-import { generateReceiptPdf } from "../src/lib/receiptPdf.js";
+import { generateReceiptPdf, generateA4InvoicePdf } from "../src/lib/receiptPdf.js";
 
 describe("MS PAN SHOP — Billing Calculation & Utility Tests", () => {
   test("formatINR formats Indian currency with symbol and 2 decimals", () => {
@@ -126,5 +126,33 @@ describe("MS PAN SHOP — Billing Calculation & Utility Tests", () => {
     assert.ok(doc);
     const output = doc.output("arraybuffer");
     assert.ok(output.byteLength > 1000);
+  });
+
+  test("Offline jsPDF A4 wholesale invoice generator creates valid PDF document", () => {
+    const sampleSale = {
+      bill_number: "MS-20261021-1004",
+      customer_name: "Popular Wholesale Traders",
+      customer_phone: "9876543210",
+      subtotal: 803.0,
+      discount_amount: 0.0,
+      total_amount: 803.0,
+      payment_method: "Cash",
+      created_at: new Date().toISOString(),
+      items: [
+        { product_name: "65ml Paper Cups (Sleeve of 100 pcs)", unit: "sleeve", quantity: 1, unit_price: 45.0, line_total: 45.0 },
+        { product_name: "Classic Connect (20s Pack)", unit: "pack", quantity: 1, unit_price: 418.0, line_total: 418.0 },
+        { product_name: "Classic Milds (Pack of 20)", unit: "pack", quantity: 1, unit_price: 340.0, line_total: 340.0 },
+      ],
+    };
+
+    const doc = generateA4InvoicePdf(sampleSale, {
+      shop_name: "MS PAN SHOP",
+      phone: "+91 98765 43210",
+      address: "Muneshwara Nagar, Popular Colony",
+    });
+
+    assert.ok(doc);
+    const output = doc.output("arraybuffer");
+    assert.ok(output.byteLength > 1500);
   });
 });
