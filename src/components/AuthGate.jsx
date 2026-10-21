@@ -4,10 +4,12 @@ import { supabase } from "../lib/supabase";
 export default function AuthGate({ children }) {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isSignUpMode, setIsSignUpMode] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -37,32 +39,67 @@ export default function AuthGate({ children }) {
     };
   }, []);
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage("");
+    setSuccessMessage("");
 
     if (!email.trim() || !password) {
       setErrorMessage("Please enter both email and password.");
       return;
     }
 
+    if (password.length < 6) {
+      setErrorMessage("Password must be at least 6 characters long.");
+      return;
+    }
+
     setBusy(true);
+
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
+      if (isSignUpMode) {
+        // Sign Up Mode
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            data: { display_name: "Shop Owner" },
+          },
+        });
 
-      if (error) {
-        throw error;
+        if (error) throw error;
+
+        if (data?.session) {
+          // Instantly logged in (if auto-confirm enabled)
+          setSession(data.session);
+        } else if (data?.user) {
+          // Email confirmation required by Supabase
+          setSuccessMessage(
+            "Account created! If your Supabase project requires email verification, check your inbox or click 'Auto Confirm User' in your Supabase dashboard."
+          );
+          setIsSignUpMode(false);
+        }
+      } else {
+        // Sign In Mode
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+
+        if (error) {
+          if (error.message.includes("Invalid login credentials")) {
+            throw new Error(
+              "Account not found or password incorrect. If this is your first time, click 'First-time Owner Setup' below to register your account."
+            );
+          }
+          throw error;
+        }
+
+        setSession(data.session);
       }
-
-      setSession(data.session);
     } catch (err) {
-      console.error("Login failed:", err);
-      setErrorMessage(
-        err.message || "Invalid credentials. Please verify your email and password."
-      );
+      console.error("Auth action failed:", err);
+      setErrorMessage(err.message || "Authentication failed. Please check your credentials.");
     } finally {
       setBusy(false);
     }
@@ -84,7 +121,7 @@ export default function AuthGate({ children }) {
     return children({ session, user: session.user });
   }
 
-  // Otherwise, render Owner Login Gate
+  // Otherwise, render Owner Login / Sign Up Gate
   return (
     <div className="auth-container">
       <div className="auth-card">
@@ -92,23 +129,31 @@ export default function AuthGate({ children }) {
         <div className="auth-brand">
           <div className="auth-logo-badge">MS</div>
           <h1 className="auth-shop-title">MS PAN SHOP</h1>
-          <p className="auth-shop-subtitle">Owner & Cashier Portal</p>
+          <p className="auth-shop-subtitle">
+            {isSignUpMode ? "Create Shop Owner Account" : "Owner & Cashier Portal"}
+          </p>
         </div>
 
         {errorMessage && (
-          <div className="alert-danger text-sm mb-4">
+          <div className="alert-danger text-xs mb-4 leading-relaxed">
             ⚠️ {errorMessage}
           </div>
         )}
 
-        {/* Login Form */}
-        <form onSubmit={handleLogin} className="auth-form">
+        {successMessage && (
+          <div className="alert-success text-xs mb-4 leading-relaxed">
+            ✓ {successMessage}
+          </div>
+        )}
+
+        {/* Auth Form */}
+        <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
             <label className="form-label">Shop Owner Email</label>
             <input
               type="email"
               className="form-input"
-              placeholder="e.g. owner@mspan.com"
+              placeholder="e.g. abhu843@gmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="username"
@@ -121,10 +166,10 @@ export default function AuthGate({ children }) {
             <input
               type="password"
               className="form-input"
-              placeholder="••••••••"
+              placeholder="Enter your password (min 6 characters)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
+              autoComplete={isSignUpMode ? "new-password" : "current-password"}
               required
             />
           </div>
@@ -136,18 +181,37 @@ export default function AuthGate({ children }) {
           >
             {busy ? (
               <span className="flex items-center justify-center gap-2">
-                <span className="spinner" /> Signing In...
+                <span className="spinner" /> Processing...
               </span>
+            ) : isSignUpMode ? (
+              "Create Owner Account"
             ) : (
               "Sign In to MS Pan Shop"
             )}
           </button>
         </form>
 
+        {/* Toggle between Sign In and Sign Up */}
+        <div className="text-center mt-4">
+          <button
+            type="button"
+            className="btn-link text-xs font-semibold"
+            onClick={() => {
+              setIsSignUpMode(!isSignUpMode);
+              setErrorMessage("");
+              setSuccessMessage("");
+            }}
+          >
+            {isSignUpMode
+              ? "← Already have an account? Sign In"
+              : "First time setup? Create Owner Account →"}
+          </button>
+        </div>
+
         <div className="auth-footer-note">
-          <p>Protected by Supabase Row Level Security.</p>
+          <p>Connected to Supabase Project: <strong>MS-PAN</strong></p>
           <p className="text-xs text-gray-400 mt-1">
-            Accounts are managed by the Shop Administrator.
+            Row Level Security active.
           </p>
         </div>
       </div>
