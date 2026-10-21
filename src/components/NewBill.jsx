@@ -19,6 +19,9 @@ export default function NewBill({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  // Mobile sub-tab: 'catalog' or 'cart'
+  const [mobileTab, setMobileTab] = useState("catalog");
+
   // Filter products by category & search
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
@@ -45,7 +48,6 @@ export default function NewBill({
       const existingIndex = prevCart.findIndex((item) => item.product_id === product.id);
       if (existingIndex > -1) {
         const existingItem = prevCart[existingIndex];
-        // Check stock availability
         if (product.stock_quantity !== undefined && existingItem.quantity >= product.stock_quantity) {
           alert(`Cannot add more. Only ${product.stock_quantity} available in stock.`);
           return prevCart;
@@ -136,6 +138,7 @@ export default function NewBill({
       setCustomerName("");
       setCustomerPhone("");
       setErrorMessage("");
+      setMobileTab("catalog");
     }
   };
 
@@ -204,11 +207,10 @@ export default function NewBill({
       setCustomerPhone("");
       setPaymentMethod("Cash");
       setErrorMessage("");
+      setMobileTab("catalog");
 
-      // Trigger product refresh so stock updates in UI
       if (onRefreshProducts) onRefreshProducts();
 
-      // Show receipt modal
       if (onSaleCompleted) {
         onSaleCompleted(data);
       }
@@ -222,16 +224,38 @@ export default function NewBill({
 
   return (
     <div className="new-bill-layout">
-      {/* LEFT COLUMN: Product Catalog & Category Filter */}
-      <div className="catalog-section">
-        {/* Search bar & Quick Category Pills */}
+      {/* MOBILE TOP SEGMENT CONTROL (< 960px) */}
+      <div className="mobile-view-toggle-bar">
+        <button
+          className={`mobile-toggle-btn ${mobileTab === "catalog" ? "active" : ""}`}
+          onClick={() => setMobileTab("catalog")}
+        >
+          🛍️ Add Products
+        </button>
+        <button
+          className={`mobile-toggle-btn ${mobileTab === "cart" ? "active" : ""}`}
+          onClick={() => setMobileTab("cart")}
+        >
+          🛒 Current Bill
+          {totalItemsCount > 0 && (
+            <span className="mobile-tab-badge">{totalItemsCount}</span>
+          )}
+          {totalItemsCount > 0 && (
+            <span className="mobile-tab-amount">• {formatINR(finalTotal)}</span>
+          )}
+        </button>
+      </div>
+
+      {/* LEFT COLUMN: Product Catalog */}
+      <div className={`catalog-section ${mobileTab === "cart" ? "hide-on-mobile" : ""}`}>
+        {/* Search bar & Category Pills */}
         <div className="catalog-header-card">
           <div className="search-input-wrapper">
             <span className="search-icon">🔍</span>
             <input
               type="text"
               className="search-input"
-              placeholder="Search products by name or code..."
+              placeholder="Search items by name or SKU..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -246,7 +270,7 @@ export default function NewBill({
             )}
           </div>
 
-          {/* Category Pills Bar */}
+          {/* Category Pills */}
           <div className="category-pills-bar">
             <button
               className={`cat-pill ${selectedCategory === "ALL" ? "active" : ""}`}
@@ -321,7 +345,7 @@ export default function NewBill({
       </div>
 
       {/* RIGHT COLUMN: Active Bill / Cart Panel */}
-      <div className="cart-panel-section">
+      <div className={`cart-panel-section ${mobileTab === "catalog" ? "hide-on-mobile" : ""}`}>
         <div className="cart-panel-card">
           {/* Cart Header */}
           <div className="cart-header">
@@ -329,11 +353,19 @@ export default function NewBill({
               <h3>Current Bill</h3>
               <span className="cart-badge-count">{totalItemsCount} items</span>
             </div>
-            {cart.length > 0 && (
-              <button className="btn-text-danger" onClick={clearCart}>
-                Clear All
+            <div className="flex items-center gap-2">
+              <button
+                className="btn btn-sm btn-secondary mobile-only-inline"
+                onClick={() => setMobileTab("catalog")}
+              >
+                + Add Items
               </button>
-            )}
+              {cart.length > 0 && (
+                <button className="btn-text-danger" onClick={clearCart}>
+                  Clear
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Cart Items List */}
@@ -342,7 +374,13 @@ export default function NewBill({
               <div className="empty-cart-state">
                 <div className="empty-cart-icon">🛒</div>
                 <p className="empty-cart-title">Cart is empty</p>
-                <p className="empty-cart-sub">Tap any product on the left to add it</p>
+                <p className="empty-cart-sub">Tap any product to add it to the bill</p>
+                <button
+                  className="btn btn-primary btn-sm mt-3 mobile-only-inline"
+                  onClick={() => setMobileTab("catalog")}
+                >
+                  ← Go to Products
+                </button>
               </div>
             ) : (
               <div className="cart-items-list">
@@ -398,7 +436,7 @@ export default function NewBill({
             )}
           </div>
 
-          {/* Cart Customer Details (Collapsible or compact inputs) */}
+          {/* Cart Customer Details */}
           <div className="cart-customer-section">
             <div className="input-grid-2">
               <input
@@ -411,14 +449,14 @@ export default function NewBill({
               <input
                 type="tel"
                 className="form-input text-xs"
-                placeholder="Phone (for WhatsApp receipt)"
+                placeholder="Phone (WhatsApp Receipt)"
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
               />
             </div>
           </div>
 
-          {/* Cart Pricing & Discount Summary */}
+          {/* Cart Pricing & Summary */}
           <div className="cart-pricing-summary">
             <div className="pricing-row">
               <span className="text-gray-600">Subtotal:</span>
@@ -495,6 +533,19 @@ export default function NewBill({
           </div>
         </div>
       </div>
+
+      {/* FLOATING MOBILE CHECKOUT PILL (visible on mobile in catalog view when cart has items) */}
+      {mobileTab === "catalog" && totalItemsCount > 0 && (
+        <div className="mobile-floating-checkout-bar" onClick={() => setMobileTab("cart")}>
+          <div className="floating-cart-info">
+            <span className="floating-cart-badge">{totalItemsCount}</span>
+            <span className="floating-cart-total">{formatINR(finalTotal)}</span>
+          </div>
+          <button className="floating-checkout-btn">
+            View Bill & Pay →
+          </button>
+        </div>
+      )}
     </div>
   );
 }

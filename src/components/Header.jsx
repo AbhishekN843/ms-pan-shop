@@ -17,7 +17,6 @@ export default function Header({
           timeZone: "Asia/Kolkata",
           hour: "2-digit",
           minute: "2-digit",
-          second: "2-digit",
           hour12: true,
         })
       );
@@ -33,57 +32,74 @@ export default function Header({
     { id: "dashboard", label: "Dashboard", icon: "📊" },
     { id: "products", label: "Products", icon: "📦" },
     { id: "categories", label: "Categories", icon: "🏷️" },
-    { id: "sales", label: "Sales History", icon: "📜" },
+    { id: "sales", label: "History", icon: "📜" },
     { id: "settings", label: "Settings", icon: "⚙️" },
   ];
 
   return (
-    <header className="app-header">
-      <div className="header-top-row">
-        {/* Brand */}
-        <div className="header-brand" onClick={() => onSelectTab("new-bill")}>
-          <div className="brand-logo-pill">MS</div>
-          <div>
-            <h1 className="brand-title">{shopSettings?.shop_name || "MS PAN SHOP"}</h1>
-            <p className="brand-subtitle">{shopSettings?.tagline || "Billing Application"}</p>
+    <>
+      {/* Top Application Header */}
+      <header className="app-header">
+        <div className="header-top-row">
+          {/* Brand */}
+          <div className="header-brand" onClick={() => onSelectTab("new-bill")}>
+            <div className="brand-logo-pill">MS</div>
+            <div className="brand-text-container">
+              <h1 className="brand-title">{shopSettings?.shop_name || "MS PAN SHOP"}</h1>
+              <p className="brand-subtitle">{shopSettings?.tagline || "Point of Sale"}</p>
+            </div>
+          </div>
+
+          {/* Center Live Time (Desktop/Tablet) */}
+          <div className="header-clock-pill desktop-only">
+            <span className="clock-pulse" />
+            <span className="clock-time font-mono">{currentTime} (IST)</span>
+          </div>
+
+          {/* User / Logout */}
+          <div className="header-user-actions">
+            <div className="user-info-text">
+              <span className="user-email-label">
+                {user?.email?.split("@")[0] || "Owner"}
+              </span>
+              <span className="text-2xs text-green font-medium">● Online</span>
+            </div>
+            <button className="btn-logout-icon" onClick={onLogout} title="Logout">
+              🚪
+            </button>
           </div>
         </div>
 
-        {/* Center Live Time */}
-        <div className="header-clock-pill">
-          <span className="clock-pulse" />
-          <span className="clock-time font-mono">{currentTime} (IST)</span>
-        </div>
+        {/* Top Navigation Tabs (Desktop only) */}
+        <nav className="header-nav-bar desktop-only">
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              className={`nav-tab-btn ${activeTab === item.id ? "active" : ""} ${
+                item.highlight ? "tab-highlight" : ""
+              }`}
+              onClick={() => onSelectTab(item.id)}
+            >
+              <span className="tab-icon">{item.icon}</span>
+              <span className="tab-label">{item.label}</span>
+            </button>
+          ))}
+        </nav>
+      </header>
 
-        {/* User / Logout */}
-        <div className="header-user-actions">
-          <div className="user-info-text">
-            <span className="text-xs font-semibold text-gray-800">
-              {user?.email?.split("@")[0] || "Owner"}
-            </span>
-            <span className="text-2xs text-green font-medium">Active</span>
-          </div>
-          <button className="btn-logout-icon" onClick={onLogout} title="Logout">
-            🚪
-          </button>
-        </div>
-      </div>
-
-      {/* Navigation Tabs Bar */}
-      <nav className="header-nav-bar">
+      {/* MOBILE BOTTOM NAVIGATION BAR (Android Native App Style) */}
+      <nav className="mobile-bottom-nav-bar mobile-only">
         {navItems.map((item) => (
           <button
             key={item.id}
-            className={`nav-tab-btn ${activeTab === item.id ? "active" : ""} ${
-              item.highlight ? "tab-highlight" : ""
-            }`}
+            className={`bottom-nav-item ${activeTab === item.id ? "active" : ""}`}
             onClick={() => onSelectTab(item.id)}
           >
-            <span className="tab-icon">{item.icon}</span>
-            <span className="tab-label">{item.label}</span>
+            <span className="bottom-nav-icon">{item.icon}</span>
+            <span className="bottom-nav-label">{item.label}</span>
           </button>
         ))}
       </nav>
-    </header>
+    </>
   );
 }
