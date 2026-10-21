@@ -67,7 +67,14 @@ export default function AuthGate({ children }) {
           },
         });
 
-        if (error) throw error;
+        if (error) {
+          if (error.message.toLowerCase().includes("rate limit")) {
+            throw new Error(
+              "Supabase email rate limit exceeded. To disable email limits: In your Supabase Dashboard -> Authentication -> Providers -> Email, turn OFF 'Confirm email', then try again."
+            );
+          }
+          throw error;
+        }
 
         if (data?.session) {
           // Instantly logged in (if auto-confirm enabled)
@@ -75,7 +82,7 @@ export default function AuthGate({ children }) {
         } else if (data?.user) {
           // Email confirmation required by Supabase
           setSuccessMessage(
-            "Account created! If your Supabase project requires email verification, check your inbox or click 'Auto Confirm User' in your Supabase dashboard."
+            "Account created! If your Supabase project requires email verification, check your inbox or turn OFF 'Confirm email' in Supabase Auth settings."
           );
           setIsSignUpMode(false);
         }
